@@ -1,2 +1,3 @@
-# bml-project
-Repository for M2DS BML's project
+# Bayesian Machine Learning project - Pauline TRUONG & Marc-André SERGIEL
+
+The notebooks can be tested independently.
