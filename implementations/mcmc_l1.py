@@ -1,4 +1,4 @@
-# Sampling method for the MCMC-alpha=1 algorithm of Polson et al. (2011)
+# Sampling method for the MCMC alpha=1 algorithm of Polson et al. (2011)
 
 from .utils import *
 import numpy as np
@@ -76,4 +76,5 @@ def sample(X, sigma, rng, nu=1, T=100):
             else:
                 omegas[t,j] = 1/omega_inv
     
+    print("End of sampling: {} lambda coeffs removed".format(n-len(lambdas_idx)))
     return betas
