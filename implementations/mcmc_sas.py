@@ -21,17 +21,12 @@ def sample(X, sigma, rng, nu=100, pi=None, T=100):
     
     # Initializing the variables
     betas[0] = rng.normal(0,1,size=k)
-    lambdas[0] = rng.wald(1,1, size=n)  # doesn't matter, we don't use it
     gammas[0] = rng.binomial(n=1, p=pi)
     gamma_idx = gammas[0].astype(bool)
+    # No need to initialize lambda we will compute the others starting from lambdas[1]
     
     # List to keep track of indices to remove for stability
-    lambdas_idx = list(range(n))    
-    
-    # Computation of B_gamma and b_gamma as we need them for the first iteration
-    B_gamma_inv = (1/nu**2) * sigma2_inv[gamma_idx,:][:,gamma_idx] + X[:,gamma_idx].T @ np.diag(1/lambdas[0]) @ X[:,gamma_idx]
-    B_gamma = np.linalg.inv(B_gamma_inv)
-    b_gamma = B_gamma @ X[:,gamma_idx].T @ (np.ones(n) + 1/lambdas[0])
+    lambdas_idx = list(range(n))
 
     for t in range(1,T):
         
@@ -60,8 +55,8 @@ def sample(X, sigma, rng, nu=100, pi=None, T=100):
             print('Remaining coeffs in lambda : {}'.format(len(lambdas_idx)))
                 
         # Compute XΛ⁻¹X and X.T(1+λ⁻¹) to avoid recomputing them
-        reusable_result1 = X[lambdas_idx,:].T @ np.diag(1/lambdas[t][lambdas_idx]) @ X[lambdas_idx,:]
-        reusable_result2 = X[lambdas_idx,:].T @ (np.ones(len(lambdas_idx)) + 1/lambdas[t][lambdas_idx])
+        reusable_result1 = X[lambdas_idx,:].T @ np.diag(1/(lambdas[t][lambdas_idx])) @ X[lambdas_idx,:]
+        reusable_result2 = X[lambdas_idx,:].T @ (np.ones(len(lambdas_idx)) + 1/(lambdas[t][lambdas_idx]))
                                                   
         # Sampling gamma using newest available values
         current_gamma = np.copy(gammas[t-1])
@@ -95,19 +90,20 @@ def sample(X, sigma, rng, nu=100, pi=None, T=100):
             # Computing the probability for the value 0
             term1_0 = np.array([(pi[i]**current_gamma_0[i]) * ((1-pi[i])**(1-current_gamma_0[i])) for i in range(k)]).prod()
             term2_0 = np.sqrt((1/nu**2) * (1/sigma[gamma_idx_0]**2).prod() / np.linalg.det(B_gamma_inv_0))
-            term3_0 = np.exp(- (1/2) * ( b_gamma_0.T @ reusable_result1[gamma_idx_0,:][:,gamma_idx_0] @ b_gamma_0 - 2 * b_gamma_0.T @ reusable_result2[gamma_idx_0] - (1/(nu**2)) * b_gamma_0.T @ sigma2_inv[gamma_idx_0,:][:,gamma_idx_0] @ b_gamma_0 ))
+            term3_0 = np.exp(-(1/2) * (b_gamma_0.T @ reusable_result1[gamma_idx_0,:][:,gamma_idx_0] @ b_gamma_0 - b_gamma_0.T @ reusable_result2[gamma_idx_0]) - (1/(2*(nu**2))) * b_gamma_0.T @ sigma2_inv[gamma_idx_0,:][:,gamma_idx_0] @ b_gamma_0 )
+            
             p[0] = term1_0 * term2_0 * term3_0
             
-            print(term1_0, term2_0, term3_0)
+            #print(term1_0, term2_0, term3_0)
             
             # Computing the probability for the value 1
             term1_1 = np.array([(pi[i]**current_gamma_1[i]) * ((1-pi[i])**(1-current_gamma_1[i])) for i in range(k)]).prod()
             term2_1 = np.sqrt((1/nu**2) * (1/sigma[gamma_idx_1]**2).prod() / np.linalg.det(B_gamma_inv_1))
-            term3_1 = np.exp(- (1/2) * ( b_gamma_1.T @ reusable_result1[gamma_idx_1,:][:,gamma_idx_1] @ b_gamma_1 - 2 * b_gamma_1.T @ reusable_result2[gamma_idx_1] - (1/(nu**2)) * b_gamma_1.T @ sigma2_inv[gamma_idx_1,:][:,gamma_idx_1] @ b_gamma_1 ))
+            term3_1 = np.exp(-(1/2) * (b_gamma_1.T @ reusable_result1[gamma_idx_1,:][:,gamma_idx_1] @ b_gamma_1 - b_gamma_1.T @ reusable_result2[gamma_idx_1]) - (1/(2*(nu**2))) * b_gamma_1.T @ sigma2_inv[gamma_idx_1,:][:,gamma_idx_1] @ b_gamma_1 )
             p[1] = term1_1 * term2_1 * term3_1
             
-            print(term1_1, term2_1, term3_1)
-            print(p)
+            #print(term1_1, term2_1, term3_1)
+            #print(p)
             
             # Normalizing the probability
             p = p / p.sum()
