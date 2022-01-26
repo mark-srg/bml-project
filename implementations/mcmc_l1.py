@@ -5,19 +5,23 @@ import numpy as np
 
 def sample(X, sigma, rng, nu=1, T=100):
     
+    # Extracting useful information
     n, k = X.shape
     
-    sigma2 = np.diag(sigma**2)
+    # Computing the inverse Sigma matrix
     sigma2_inv = np.diag(1/sigma**2)
-
+    
+    # Initializing the arrays that will store the samples
     betas = np.zeros((T,k))
     lambdas = np.zeros((T,n))
     omegas = np.zeros((T,k))
-
+    
+    # Initializing the variables
     betas[0] = rng.normal(0,1,size=k)
     lambdas[0] = rng.wald(1,1,size=n)
     omegas[0] = rng.wald(1,1,size=k)
-
+    
+    # Lists to keep track of indices to remove for stability
     lambdas_idx = list(range(n))
     omegas_idx = list(range(k))
 
@@ -25,7 +29,8 @@ def sample(X, sigma, rng, nu=1, T=100):
         
         if t % 100 == 0:
             print("Step {}".format(t))
-
+        
+        # Removing omegas that are infinite to avoid errors
         num_omega = numerical(1/omegas[t-1])
         if num_omega[0]:
             print("At time", t)
@@ -37,7 +42,8 @@ def sample(X, sigma, rng, nu=1, T=100):
                 if i in omegas_idx:
                     omegas_idx.remove(i)
             print('Remaining coeffs in omega : {}'.format(len(omegas_idx)))
-
+        
+        # Removing lambdas that are infinite to avoid errors
         num_lambda = numerical(1/lambdas[t-1])
         if num_lambda[0]:
             print("At time", t)
