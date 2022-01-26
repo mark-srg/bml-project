@@ -15,8 +15,8 @@ def sample(X, sigma, rng, nu=1, T=100):
     omegas = np.zeros((T,k))
 
     betas[0] = rng.normal(0,1,size=k)
-    lambdas[0] = rng.normal(0,1,size=n)
-    omegas[0] = rng.normal(0,1,size=k)
+    lambdas[0] = rng.wald(1,1,size=n)
+    omegas[0] = rng.wald(1,1,size=k)
 
     lambdas_idx = list(range(n))
     omegas_idx = list(range(k))
