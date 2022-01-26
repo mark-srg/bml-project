@@ -27,7 +27,7 @@ def sample(X, sigma, rng, nu=1, T=100):
 
     for t in range(1,T):
         
-        if t % 100 == 0:
+        if t % 500 == 0:
             print("Step {}".format(t))
         
         # Removing omegas that are infinite to avoid errors

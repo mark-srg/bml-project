@@ -35,7 +35,7 @@ def sample(X, sigma, rng, nu=100, pi=None, T=100):
 
     for t in range(1,T):
         
-        if t % 100 == 0:
+        if t % 500 == 0:
             print("Step {}".format(t))
             
         # Sampling lambda using beta
